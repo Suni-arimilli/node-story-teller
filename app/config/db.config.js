@@ -4,7 +4,7 @@ const db_user = process.env.DB_USER;
 const db_name = process.env.DB_NAME;
 
 module.exports = {
-  HOST: localhost,
+  HOST: "localhost",
   USER: "root",
   PASSWORD: "",
   DB: "StoryTeller",
