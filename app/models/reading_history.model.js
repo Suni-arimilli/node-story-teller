@@ -4,10 +4,6 @@ module.exports = (sequelize, Sequelize) => {
         type: Sequelize.INTEGER,
         autoIncrement: true,
         primaryKey: true
-      },
-      page_id: {
-        type: Sequelize.INTEGER,
-        allowNull: false
       }
     });
     return ReadingHistory;

@@ -5,10 +5,6 @@ module.exports = (sequelize, Sequelize) => {
         autoIncrement: true,
         primaryKey: true
       },
-      page_id: {
-        type: Sequelize.INTEGER,
-        allowNull: false
-      },
       remaining_time: {
         type: Sequelize.INTEGER,
         allowNull: false  // Time in seconds
