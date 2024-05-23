@@ -5,14 +5,6 @@ module.exports = (sequelize, Sequelize) => {
         autoIncrement: true,
         primaryKey: true
       },
-      story_id: {
-        type: Sequelize.INTEGER,
-        allowNull: false,
-        references: {
-          model: 'stories',
-          key: 'id'
-        }
-      },
       chapter_number: {
         type: Sequelize.INTEGER,
         allowNull: false
