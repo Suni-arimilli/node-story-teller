@@ -9,10 +9,6 @@ module.exports = (sequelize, Sequelize) => {
         type: Sequelize.STRING(255),
         allowNull: false
       },
-      user_id: {
-        type: Sequelize.INTEGER,
-        allowNull: false
-      },
       publication_date: {
         type: Sequelize.DATE,
         allowNull: true
