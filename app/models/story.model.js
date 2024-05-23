@@ -13,14 +13,6 @@ module.exports = (sequelize, Sequelize) => {
         type: Sequelize.INTEGER,
         allowNull: false
       },
-      category_id: {
-        type: Sequelize.INTEGER,
-        allowNull: false,
-        references: {
-          model: 'categories',
-          key: 'id'
-        }
-      },
       publication_date: {
         type: Sequelize.DATE,
         allowNull: true
