@@ -1,14 +1,13 @@
 module.exports = (sequelize, Sequelize) => {
   const Session = sequelize.define("session", {
     email: {
-      type: Sequelize.STRING,
-      allowNull: false,
+      type: Sequelize.STRING(50),
+      allowNull: false
     },
-    expirationDate: {
+    expiration_date: {
       type: Sequelize.DATE,
-      allowNull: false,
-    },
+      allowNull: false
+    }
   });
-
   return Session;
 };
