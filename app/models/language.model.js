@@ -5,7 +5,7 @@ module.exports = (sequelize, Sequelize) => {
         autoIncrement: true,
         primaryKey: true
       },
-      language_name: {
+      name: {
         type: Sequelize.STRING(100),
         allowNull: false
       }
