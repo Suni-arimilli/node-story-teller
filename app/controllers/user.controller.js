@@ -6,26 +6,31 @@ const { encrypt, getSalt, hashPassword } = require("../authentication/crypto");
 
 // Create and Save a new User
 exports.create = async (req, res) => {
+  console.log("req",req.body)
   // Validate request
-  if (req.body.firstName === undefined) {
-    const error = new Error("First name cannot be empty for user!");
+  if (req.body.first_name === undefined) {
+    const error = new Error("first_name cannot be empty for user!");
     error.statusCode = 400;
     throw error;
-  } else if (req.body.lastName === undefined) {
-    const error = new Error("Last name cannot be empty for user!");
+  } else if (req.body.last_name === undefined) {
+    const error = new Error("last_name cannot be empty for user!");
     error.statusCode = 400;
     throw error;
   } else if (req.body.email === undefined) {
-    const error = new Error("Email cannot be empty for user!");
+    const error = new Error("email cannot be empty for user!");
     error.statusCode = 400;
     throw error;
   } else if (req.body.password === undefined) {
-    const error = new Error("Password cannot be empty for user!");
+    const error = new Error("password cannot be empty for user!");
+    error.statusCode = 400;
+    throw error;
+  } else if (req.body.is_admin === undefined) {
+    const error = new Error("is_admin cannot be empty for user!");
     error.statusCode = 400;
     throw error;
   }
 
-  // find by email
+  // Find a user by email
   await User.findOne({
     where: {
       email: req.body.email,
@@ -42,12 +47,9 @@ exports.create = async (req, res) => {
 
         // Create a User
         const user = {
-          id: req.body.id,
-          firstName: req.body.firstName,
-          lastName: req.body.lastName,
-          email: req.body.email,
-          password: hash,
+          ...req.body,
           salt: salt,
+          password: hash
         };
 
         // Save User in the database
@@ -62,17 +64,18 @@ exports.create = async (req, res) => {
             const session = {
               email: req.body.email,
               userId: userId,
-              expirationDate: expireTime,
+              expiration_date: expireTime,
             };
             await Session.create(session).then(async (data) => {
               let sessionId = data.id;
               let token = await encrypt(sessionId);
               let userInfo = {
                 email: user.email,
-                firstName: user.firstName,
-                lastName: user.lastName,
+                first_name: user.first_name,
+                last_name: user.last_name,
                 id: user.id,
                 token: token,
+                is_admin: user.is_admin
               };
               res.send(userInfo);
             });
@@ -128,7 +131,7 @@ exports.findOne = (req, res) => {
     });
 };
 
-// Find a single User with an email
+// Find a user by email
 exports.findByEmail = (req, res) => {
   const email = req.params.email;
 
@@ -141,10 +144,10 @@ exports.findByEmail = (req, res) => {
       if (data) {
         res.send(data);
       } else {
-        res.send({ email: "not found" });
-        /*res.status(404).send({
+        // res.status(404).send({ email: "not found" });
+        res.status(404).send({
           message: `Cannot find User with email=${email}.`
-        });*/
+        });
       }
     })
     .catch((err) => {
