@@ -22,17 +22,17 @@ module.exports = (sequelize, Sequelize) => {
       allowNull: false,
       unique: true
     },
+    password: {
+      type: Sequelize.BLOB,
+      allowNull: false,
+    },
     salt: {
-      type: Sequelize.STRING(200),
-      allowNull: false
+      type: Sequelize.BLOB,
+      allowNull: false,
     },
     is_admin: {
       type: Sequelize.BOOLEAN,
       defaultValue: false
-    },
-    created_at: {
-      type: Sequelize.DATE,
-      defaultValue: Sequelize.NOW
     }
   });
   return User;

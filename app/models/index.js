@@ -9,6 +9,9 @@ const sequelize = new Sequelize(dbConfig.DB, dbConfig.USER, dbConfig.PASSWORD, {
     acquire: dbConfig.pool.acquire,
     idle: dbConfig.pool.idle,
   },
+  define: {
+    timestamps: false
+  }
 });
 const db = {};
 db.Sequelize = Sequelize;
@@ -17,13 +20,12 @@ db.sequelize = sequelize;
 db.user = require("./user.model.js")(sequelize, Sequelize);
 db.session = require("./session.model.js")(sequelize, Sequelize);
 db.story = require("./story.model.js")(sequelize, Sequelize);
-db.chapter = require("./chapter.model.js")(sequelize, Sequelize);
-db.contentElement = require("./content_element.model.js")(sequelize, Sequelize);
-db.bookmark = require("./bookmark.model.js")(sequelize, Sequelize);
 db.category = require("./category.model.js")(sequelize, Sequelize);
-db.readingSession = require("./reading_session.model.js")(sequelize, Sequelize);
-db.readingHistory = require("./reading_history.model.js")(sequelize, Sequelize);
 db.language = require("./language.model.js")(sequelize, Sequelize);
+db.storyCountry = require("./storyCountry.model.js")(sequelize,Sequelize);
+db.storyRole = require("./storyRole.model.js")(sequelize,Sequelize);
+db.narrative = require("./narrative.model.js")(sequelize,Sequelize);
+db.configuration = require("./configuration.model.js")(sequelize,Sequelize);
 
 // Define relationships
 db.user.hasMany(db.session, { as: "sessions" });
@@ -35,34 +37,20 @@ db.story.belongsTo(db.user, { as: "user" });
 db.category.hasMany(db.story, { as: "stories" });
 db.story.belongsTo(db.category, { as: "category" });
 
-db.story.hasMany(db.chapter, { as: "chapters" });
-db.chapter.belongsTo(db.story, { as: "story" });
+db.storyCountry.hasMany(db.story, { as: "stories" });
+db.story.belongsTo(db.storyCountry, { as: "storyCountry" });
 
-db.chapter.hasMany(db.contentElement, { as: "contentElements" });
-db.contentElement.belongsTo(db.chapter, { as: "chapter" });
+db.storyRole.hasMany(db.story, { as: "stories" });
+db.story.belongsTo(db.storyRole, { as: "storyRole" });
 
-db.user.hasMany(db.bookmark, { as: "bookmarks" });
-db.bookmark.belongsTo(db.user, { as: "user" });
+db.narrative.hasMany(db.story, { as: "stories" });
+db.story.belongsTo(db.narrative, { as: "narrative" });
 
-db.story.hasMany(db.bookmark, { as: "bookmarks" });
-db.bookmark.belongsTo(db.story, { as: "story" });
+db.configuration.hasMany(db.story, { as: "stories" });
+db.story.belongsTo(db.configuration, { as: "configuration" });
 
-db.user.hasMany(db.readingSession, { as: "readingSessions" });
-db.readingSession.belongsTo(db.user, { as: "user" });
+db.language.hasMany(db.story, { as: "stories" });
+db.story.belongsTo(db.language, { as: "language" });
 
-db.story.hasMany(db.readingSession, { as: "readingSessions" });
-db.readingSession.belongsTo(db.story, { as: "story" });
-
-db.chapter.hasMany(db.readingSession, { as: "readingSessions" });
-db.readingSession.belongsTo(db.chapter, { as: "chapter" });
-
-db.user.hasMany(db.readingHistory, { as: "readingHistories" });
-db.readingHistory.belongsTo(db.user, { as: "user" });
-
-db.story.hasMany(db.readingHistory, { as: "readingHistories" });
-db.readingHistory.belongsTo(db.story, { as: "story" });
-
-db.chapter.hasMany(db.readingHistory, { as: "readingHistories" });
-db.readingHistory.belongsTo(db.chapter, { as: "chapter" });
 
 module.exports = db;
