@@ -26,6 +26,7 @@
     "jsonwebtoken": "^9.0.0",
     "mysql2": "^3.2.3",
     "parse": "^4.0.1",
+    "openai": "^4.47.2",
     "sequelize": "^6.19.0",
     "supertest": "^6.3.3"
   }
