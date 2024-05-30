@@ -12,6 +12,10 @@ module.exports = (sequelize, Sequelize) => {
       publication_date: {
         type: Sequelize.DATE,
         allowNull: true
+      },
+      content: {
+        type: Sequelize.TEXT,
+        allowNull: false
       }
     });
     return Story;
