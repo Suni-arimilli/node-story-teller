@@ -1,10 +1,7 @@
 const OpenAI = require('openai');
-const core = require('@actions/core');
-
-const apiKey = core.getInput('CHAT_GPT_API_KEY') || "";
 
 const openAi = new OpenAI({
-  apiKey: apiKey
+  apiKey: "sk-proj-WPL34sKFv7rWIsNon3pZT3BlbkFJHaxfDGtvrstg7QXw4Vmr"
 })
 
 exports.generateStoryUsingLLM = async (storyData) => {
