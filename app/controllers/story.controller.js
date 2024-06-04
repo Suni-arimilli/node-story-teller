@@ -7,7 +7,7 @@ const StoryRole = db.storyRole;
 const Narrative = db.narrative;
 const Configuration = db.configuration;
 const Language = db.language;
-const { generateStoryUsingLLM } = require("../utils/storyUtils")
+const { generateStoryUsingLLM, updateStoryUsingLLM } = require("../utils/storyUtils")
 
 // Create and save a new story
 exports.create = async (req, res) => {
@@ -109,7 +109,27 @@ exports.findOne = async (req, res) => {
 exports.update = async (req, res) => {
   const id = req.params.id;
   try {
-    const [updated] = await Story.update(req.body, {
+    const { id, title,content, categoryId, storyCountryId, storyRoleId, narrativeId, configurationId, languageId } = req.body;
+
+    // Fetching the details from corresponding tables
+    const category = categoryId ? await Category.findByPk(categoryId) : null;
+    const storyCountry = storyCountryId ? await StoryCountry.findByPk(storyCountryId) : null;
+    const storyRole = storyRoleId ? await StoryRole.findByPk(storyRoleId) : null;
+    const narrative = narrativeId ? await Narrative.findByPk(narrativeId) : null;
+    const configuration = configurationId ? await Configuration.findByPk(configurationId) : null;
+    const language = languageId ? await Language.findByPk(languageId) : null;
+
+    if (!category || !storyCountry || !storyRole || !narrative || !configuration || !language) {
+      return res.status(400).json({ message: "Invalid foreign key ID(s) provided" });
+    }
+
+    const updateStoryDetails = {
+      category,storyCountry,storyRole,narrative,configuration,language,content,title
+    }
+
+    const updatedStory = await updateStoryUsingLLM(updateStoryDetails);
+
+    const [updated] = await Story.update({...req.body, content: updatedStory.content}, {
       where: { id: id }
     });
     if (updated) {
