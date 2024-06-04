@@ -79,6 +79,7 @@ exports.findAll = async (req, res) => {
   }
 };
 
+
 // Find a single story with an ID
 exports.findOne = async (req, res) => {
   const id = req.params.id;
@@ -91,10 +92,45 @@ exports.findOne = async (req, res) => {
         { model: Narrative, as: 'narrative' },
         { model: Configuration, as: 'configuration' },
         { model: Language, as: 'language' },
+        // Add more includes for other foreign key relationships if needed
       ]
     });
     if (story) {
       res.status(200).json(story);
+    } else {
+      res.status(404).json({ message: `Story with ID ${id} not found` });
+    }
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+// Update a story by the ID in the request
+exports.update = async (req, res) => {
+  const id = req.params.id;
+  try {
+    const [updated] = await Story.update(req.body, {
+      where: { id: id }
+    });
+    if (updated) {
+      res.status(200).json({ message: `Story with ID ${id} updated successfully` });
+    } else {
+      res.status(404).json({ message: `Story with ID ${id} not found` });
+    }
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+// Delete a story with the specified ID in the request
+exports.delete = async (req, res) => {
+  const id = req.params.id;
+  try {
+    const deleted = await Story.destroy({
+      where: { id: id }
+    });
+    if (deleted) {
+      res.status(200).json({ message: `Story with ID ${id} deleted successfully` });
     } else {
       res.status(404).json({ message: `Story with ID ${id} not found` });
     }
@@ -113,3 +149,69 @@ exports.findByUserId = async (req, res) => {
     res.status(500).json({ message: error.message });
   }
 };
+
+// Get stories by category ID
+exports.findByCategoryId = async (req, res) => {
+  const categoryId = req.params.categoryId;
+  try {
+    const stories = await Story.findAll({ where: { categoryId: categoryId } });
+    res.status(200).json(stories);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+// Get stories by country ID
+exports.findByCountryId = async (req, res) => {
+    const countryId = req.params.countryId;
+    try {
+      const stories = await Story.findAll({ where: { storyCountryId: countryId } });
+      res.status(200).json(stories);
+    } catch (error) {
+      res.status(500).json({ message: error.message });
+    }
+  };
+  
+  // Get stories by role ID
+  exports.findByRoleId = async (req, res) => {
+    const roleId = req.params.roleId;
+    try {
+      const stories = await Story.findAll({ where: { storyRoleId: roleId } });
+      res.status(200).json(stories);
+    } catch (error) {
+      res.status(500).json({ message: error.message });
+    }
+  };
+  
+  // Get stories by narrative ID
+  exports.findByNarrativeId = async (req, res) => {
+    const narrativeId = req.params.narrativeId;
+    try {
+      const stories = await Story.findAll({ where: { narrativeId: narrativeId } });
+      res.status(200).json(stories);
+    } catch (error) {
+      res.status(500).json({ message: error.message });
+    }
+  };
+  
+  // Get stories by configuration ID
+  exports.findByConfigurationId = async (req, res) => {
+    const configurationId = req.params.configurationId;
+    try {
+      const stories = await Story.findAll({ where: { configurationId: configurationId } });
+      res.status(200).json(stories);
+    } catch (error) {
+      res.status(500).json({ message: error.message });
+    }
+  };
+  
+  // Get stories by language ID
+  exports.findByLanguageId = async (req, res) => {
+    const languageId = req.params.languageId;
+    try {
+      const stories = await Story.findAll({ where: { languageId: languageId } });
+      res.status(200).json(stories);
+    } catch (error) {
+      res.status(500).json({ message: error.message });
+    }
+  };

@@ -27,8 +27,8 @@ exports.login = async (req, res) => {
       let token = await encrypt(sessionId);
       let userInfo = {
         email: user.email,
-        firstName: user.firstName,
-        lastName: user.lastName,
+        first_name: user.first_name,
+        last_name: user.last_name,
         id: user.id,
         is_admin: user.is_admin,
         token: token,
