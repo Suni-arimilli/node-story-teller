@@ -7,7 +7,7 @@ const StoryRole = db.storyRole;
 const Narrative = db.narrative;
 const Configuration = db.configuration;
 const Language = db.language;
-const { generateStoryUsingLLM, updateStoryUsingLLM } = require("../utils/storyUtils")
+const { generateStoryUsingLLM, updateStoryUsingLLM, translateUsingLLM } = require("../utils/storyUtils")
 
 // Create and save a new story
 exports.create = async (req, res) => {
@@ -109,9 +109,9 @@ exports.findOne = async (req, res) => {
 exports.update = async (req, res) => {
   const id = req.params.id;
   try {
-    const { id, title,content, categoryId, storyCountryId, storyRoleId, narrativeId, configurationId, languageId } = req.body;
+    const { title, content, categoryId, storyCountryId, storyRoleId, narrativeId, configurationId, languageId } = req.body;
 
-    // Fetching the details from corresponding tables
+    // Fetching the necessary details if provided
     const category = categoryId ? await Category.findByPk(categoryId) : null;
     const storyCountry = storyCountryId ? await StoryCountry.findByPk(storyCountryId) : null;
     const storyRole = storyRoleId ? await StoryRole.findByPk(storyRoleId) : null;
@@ -119,23 +119,48 @@ exports.update = async (req, res) => {
     const configuration = configurationId ? await Configuration.findByPk(configurationId) : null;
     const language = languageId ? await Language.findByPk(languageId) : null;
 
-    if (!category || !storyCountry || !storyRole || !narrative || !configuration || !language) {
-      return res.status(400).json({ message: "Invalid foreign key ID(s) provided" });
-    }
+    if (languageId && !categoryId && !storyCountryId && !storyRoleId && !narrativeId && !configurationId) {
+      // Only languageId is provided, proceed with translation
+      const story = await Story.findByPk(id,{
+        include: [
+          { model: Language, as: 'language' }]});
+      if (!story) {
+        return res.status(404).json({ message: `Story with ID ${id} not found` });
+      }
 
-    const updateStoryDetails = {
-      category,storyCountry,storyRole,narrative,configuration,language,content,title
-    }
+      const translatedContent = await translateUsingLLM(story, language.name);
+      await Story.update({ content: translatedContent, languageId }, { where: { id } });
 
-    const updatedStory = await updateStoryUsingLLM(updateStoryDetails);
-
-    const [updated] = await Story.update({...req.body, content: updatedStory.content}, {
-      where: { id: id }
-    });
-    if (updated) {
-      res.status(200).json({ message: `Story with ID ${id} updated successfully` });
+      return res.status(200).json({ message: `Story with ID ${id} translated successfully` });
     } else {
-      res.status(404).json({ message: `Story with ID ${id} not found` });
+      // Validate foreign keys if provided
+      if (!category || !storyCountry || !storyRole || !narrative || !configuration || !language) {
+        return res.status(400).json({ message: "Invalid foreign key ID(s) provided" });
+      }
+
+      const updateStoryDetails = {
+        category: category.name,
+        storyCountry: storyCountry.name,
+        storyRole: storyRole.name,
+        narrative: narrative.name,
+        configuration: configuration.name,
+        language: language.name,
+        content,
+        title
+      };
+
+      const updatedStory = await updateStoryUsingLLM(updateStoryDetails);
+
+      const [updated] = await Story.update(
+        { ...req.body, content: updatedStory.content },
+        { where: { id } }
+      );
+
+      if (updated) {
+        res.status(200).json({ message: `Story with ID ${id} updated successfully` });
+      } else {
+        res.status(404).json({ message: `Story with ID ${id} not found` });
+      }
     }
   } catch (error) {
     res.status(500).json({ message: error.message });
