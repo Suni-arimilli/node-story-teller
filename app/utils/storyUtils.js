@@ -13,7 +13,29 @@ const openAi = new OpenAI({
 exports.generateStoryUsingLLM = async (storyData) => {
 
     // Construct a generic story prompt based on the provided story data
-    const prompt = `Generate a ${storyData.narrative} story with title as ${storyData.title} in Theme ${storyData.category} for role ${storyData.storyRole} in language ${storyData.language} which takes place in ${storyData.configuration}, and story should be in ${storyData.storyCountry}.`;
+    let prompt = 'Generate a story';
+    if (storyData.narrative) {
+    prompt += ` with a ${storyData.narrative} narrative`;
+    }
+    if (storyData.title) {
+    prompt += ` titled "${storyData.title}"`;
+    }
+    if (storyData.category) {
+    prompt += ` in the theme ${storyData.category}`;
+    }
+    if (storyData.storyRole) {
+    prompt += ` for the role ${storyData.storyRole}`;
+    }
+    if (storyData.language) {
+    prompt += ` in the language ${storyData.language}`;
+    }
+    if (storyData.configuration) {
+    prompt += ` which takes place in ${storyData.configuration}`;
+    }
+    if (storyData.storyCountry) {
+    prompt += ` and is set in ${storyData.storyCountry}`;
+    }
+    prompt += '.';
 
     try {
         const response = await openAi.chat.completions.create({

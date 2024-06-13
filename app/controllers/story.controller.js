@@ -132,18 +132,14 @@ exports.update = async (req, res) => {
 
       return res.status(200).json({ message: `Story with ID ${id} translated successfully` });
     } else {
-      // Validate foreign keys if provided
-      if (!category || !storyCountry || !storyRole || !narrative || !configuration || !language) {
-        return res.status(400).json({ message: "Invalid foreign key ID(s) provided" });
-      }
 
       const updateStoryDetails = {
-        category: category.name,
-        storyCountry: storyCountry.name,
-        storyRole: storyRole.name,
-        narrative: narrative.name,
-        configuration: configuration.name,
-        language: language.name,
+        category: category?.name,
+        storyCountry: storyCountry?.name,
+        storyRole: storyRole?.name,
+        narrative: narrative?.name,
+        configuration: configuration?.name,
+        language: language?.name,
         content,
         title
       };
