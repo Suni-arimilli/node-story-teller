@@ -115,8 +115,7 @@ exports.findAll = (req, res) => {
 // Find a single User with an id
 exports.findOne = (req, res) => {
   const id = req.params.id;
-
-  User.findByPk(id)
+  User.findByPk(id, { attributes: ['first_name', 'last_name', 'email', 'id'] })
     .then((data) => {
       if (data) {
         res.send(data);
@@ -128,7 +127,7 @@ exports.findOne = (req, res) => {
     })
     .catch((err) => {
       res.status(500).send({
-        message: err.message || "Error retrieving User with id = " + id,
+        message: err.message || `Error retrieving User with id = ${id}`,
       });
     });
 };
@@ -160,29 +159,60 @@ exports.findByEmail = (req, res) => {
 };
 
 // Update a User by the id in the request
-exports.update = (req, res) => {
+exports.update = async (req, res) => {
   const id = req.params.id;
+  const { first_name, last_name, password } = req.body;
 
-  User.update(req.body, {
-    where: { id: id },
-  })
-    .then((number) => {
-      if (number == 1) {
-        res.send({
-          message: "User was updated successfully.",
-        });
-      } else {
-        res.send({
-          message: `Cannot update User with id = ${id}. Maybe User was not found or req.body is empty!`,
-        });
-      }
-    })
-    .catch((err) => {
-      res.status(500).send({
-        message: err.message || "Error updating User with id =" + id,
+  try {
+    // Fetch the user by ID
+    const user = await User.findByPk(id);
+
+    if (!user) {
+      return res.status(404).send({
+        message: `User with id = ${id} not found.`,
       });
+    }
+
+    // Update first_name and last_name
+    if (first_name) {
+      user.first_name = first_name;
+    }
+    if (last_name) {
+      user.last_name = last_name;
+    }
+
+    // Update password if provided
+    if (password !== undefined) {
+      // Check if the password is empty
+      if (password.trim() === '') {
+        // Continue with updating other details
+        await user.save();
+      } else {
+        // Generate new salt and hash the password
+        const salt = await getSalt();
+        const hash = await hashPassword(password, salt);
+
+        user.password = hash;
+        user.salt = salt;
+
+        // Save the updated user
+        await user.save();
+      }
+    } else {
+      // If password is not provided, continue with updating other details
+      await user.save();
+    }
+
+    res.send({
+      message: "User was updated successfully.",
     });
+  } catch (error) {
+    res.status(500).send({
+      message: error.message || `Error updating User with id = ${id}`,
+    });
+  }
 };
+
 
 // Delete a User with the specified id in the request
 exports.delete = (req, res) => {

@@ -10,14 +10,25 @@ exports.create = async (req, res) => {
       return res.status(400).send({ message: "Name cannot be empty!" });
     }
 
-    // Create a Configuration
-    const configuration = {
-      name: req.body.name
-    };
+    // Convert name to lowercase
+    const name = req.body.name.toLowerCase();
 
-    // Save Configuration in the database
-    const data = await Configuration.create(configuration);
-    res.send(data);
+    // Try to find or create the configuration
+    const [configuration, created] = await Configuration.findOrCreate({
+      where: { name: name },
+      defaults: { name: name, isInUse: true }
+    });
+
+    if (!created) {
+      // Configuration already exists, update isInUse to true
+      configuration.isInUse = true;
+      await configuration.save();
+      return res.send(configuration);
+    }
+
+    // If created, return the newly created configuration
+    res.send(configuration);
+
   } catch (err) {
     res.status(500).send({
       message:
@@ -84,9 +95,9 @@ exports.delete = async (req, res) => {
   const id = req.params.id;
 
   try {
-    const number = await Configuration.destroy({
+    const number = await Configuration.update({ isInUse: false }, {
       where: { id: id }
-    });
+    })
     if (number === 1) {
       res.send({ message: "Configuration was deleted successfully!" });
     } else {
@@ -104,10 +115,10 @@ exports.delete = async (req, res) => {
 // Delete all Configurations from the database.
 exports.deleteAll = async (req, res) => {
   try {
-    const number = await Configuration.destroy({
+    const number = await Configuration.update({ isInUse: false }, {
       where: {},
-      truncate: false
-    });
+      returning: true  // Ensure the updated rows are returned (optional, based on dialect)
+    })
     res.send({ message: `${number} Configurations were deleted successfully!` });
   } catch (err) {
     res.status(500).send({

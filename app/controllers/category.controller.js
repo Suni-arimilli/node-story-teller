@@ -6,28 +6,36 @@ const Op = db.Sequelize.Op;
 exports.create = async (req, res) => {
   // Validate request
   if (!req.body.name) {
-    res.status(400).send({
-      message: "Name can not be empty!"
+    return res.status(400).send({
+      message: "Name cannot be empty!"
     });
-    return;
   }
 
-  // Create a Category
-  const category = {
-    name: req.body.name,
-  };
+  // Convert name to lowercase
+  const name = req.body.name.toLowerCase();
 
-  // Save Category in the database
-  Category.create(category)
-    .then(data => {
-      res.send(data);
-    })
-    .catch(err => {
-      res.status(500).send({
-        message:
-          err.message || "Some error occurred while creating the Category."
-      });
+  try {
+    // Try to find or create the category
+    const [category, created] = await Category.findOrCreate({
+      where: { name: name },
+      defaults: { name: name, isInUse: true }
     });
+
+    if (!created) {
+      // Category already exists, update isInUse to true
+      category.isInUse = true;
+      await category.save();
+      return res.send(category);
+    }
+
+    // If created, return the newly created category
+    res.send(category);
+
+  } catch (err) {
+    res.status(500).send({
+      message: err.message || "Some error occurred while creating the Category."
+    });
+  }
 };
 
 // Retrieve all Categories from the database.
@@ -97,40 +105,43 @@ exports.update = (req, res) => {
 exports.delete = (req, res) => {
   const id = req.params.id;
 
-  Category.destroy({
+  Category.update({ isInUse: false }, {
     where: { id: id }
   })
     .then(num => {
-      if (num == 1) {
+      if (num[0] === 1) {  // num is an array with the number of affected rows in the first element
         res.send({
-          message: "Category was deleted successfully!"
+          message: "Category was marked as not in use successfully!"
         });
       } else {
         res.send({
-          message: `Cannot delete Category with id = ${id}. Maybe Category was not found!`
+          message: `Cannot mark Category with id = ${id} as not in use. Maybe Category was not found!`
         });
       }
     })
     .catch(err => {
       res.status(500).send({
-        message: "Could not delete Category with id = " + id
+        message: "Could not mark Category with id = " + id + " as not in use"
       });
     });
 };
 
+
 // Delete all Categories from the database.
 exports.deleteAll = (req, res) => {
-  Category.destroy({
+  Category.update({ isInUse: false }, {
     where: {},
-    truncate: false
+    returning: true  // Ensure the updated rows are returned (optional, based on dialect)
   })
     .then(nums => {
-      res.send({ message: `${nums} Categories were deleted successfully!` });
+      const numAffectedRows = nums[0];  // numAffectedRows is the number of affected rows
+      res.send({ message: `${numAffectedRows} Categories were marked as not in use successfully!` });
     })
     .catch(err => {
       res.status(500).send({
         message:
-          err.message || "Some error occurred while removing all categories."
+          err.message || "Some error occurred while marking all categories as not in use."
       });
     });
 };
+

@@ -105,7 +105,6 @@ exports.findOne = async (req, res) => {
   }
 };
 
-// Update a story by the ID in the request
 exports.update = async (req, res) => {
   const id = req.params.id;
   try {
