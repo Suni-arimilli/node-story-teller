@@ -10,14 +10,25 @@ exports.create = async (req, res) => {
       return res.status(400).send({ message: "Name cannot be empty!" });
     }
 
-    // Create a Language
-    const language = {
-      name: req.body.name
-    };
+    // Convert name to lowercase
+    const name = req.body.name.toLowerCase();
 
-    // Save Language in the database
-    const data = await Language.create(language);
-    res.send(data);
+    // Try to find or create the language
+    const [language, created] = await Language.findOrCreate({
+      where: { name: name },
+      defaults: { name: name, isInUse: true }
+    });
+
+    if (!created) {
+      // Language already exists, update isInUse to true
+      language.isInUse = true;
+      await language.save();
+      return res.send(language);
+    }
+
+    // If created, return the newly created language
+    res.send(language);
+
   } catch (err) {
     res.status(500).send({
       message:
@@ -84,9 +95,9 @@ exports.delete = async (req, res) => {
   const id = req.params.id;
 
   try {
-    const number = await Language.destroy({
+    const number = await Language.update({ isInUse: false }, {
       where: { id: id }
-    });
+    })
     if (number === 1) {
       res.send({ message: "Language was deleted successfully!" });
     } else {
@@ -104,10 +115,10 @@ exports.delete = async (req, res) => {
 // Delete all Languages from the database.
 exports.deleteAll = async (req, res) => {
   try {
-    const number = await Language.destroy({
+    const number = await Language.update({ isInUse: false }, {
       where: {},
-      truncate: false
-    });
+      returning: true  // Ensure the updated rows are returned (optional, based on dialect)
+    })
     res.send({ message: `${number} Languages were deleted successfully!` });
   } catch (err) {
     res.status(500).send({
