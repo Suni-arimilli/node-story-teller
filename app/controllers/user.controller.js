@@ -161,7 +161,7 @@ exports.findByEmail = (req, res) => {
 // Update a User by the id in the request
 exports.update = async (req, res) => {
   const id = req.params.id;
-  const { first_name, last_name, password } = req.body;
+  const { first_name, last_name, password, is_admin } = req.body;
 
   try {
     // Fetch the user by ID
@@ -174,11 +174,15 @@ exports.update = async (req, res) => {
     }
 
     // Update first_name and last_name
-    if (first_name) {
+    if (first_name != null) {
       user.first_name = first_name;
     }
-    if (last_name) {
+    if (last_name != null) {
       user.last_name = last_name;
+    }
+
+    if (is_admin != null) {
+      user.is_admin = is_admin;
     }
 
     // Update password if provided
