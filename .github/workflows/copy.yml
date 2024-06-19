@@ -9,6 +9,8 @@ jobs:
     steps:
       - name: Checkout Source Code
         uses: actions/checkout@v2
+        with:
+          token: ${{ secrets.TARGET_GH_TOKEN }}
 
       - name: Push to Another Repository
         run: |
