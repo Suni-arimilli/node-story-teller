@@ -1,0 +1,20 @@
+name: Mirror Repository to Another Account
+
+on:
+  workflow_dispatch:  # Trigger manually from GitHub Actions UI
+
+jobs:
+  mirror:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Source Code
+        uses: actions/checkout@v2
+
+      - name: Push to Another Repository
+        run: |
+          git config --global user.name 'ricky0517'
+          git config --global user.email 'rithikrajvemula@sosonweb.com'
+          git remote add target https://github.com/sosonweb/backend_storyteller
+          git push target HEAD:main --force
+        env:
+          GIT_ASKPASS: echo ${{ secrets.TARGET_GH_TOKEN }}
